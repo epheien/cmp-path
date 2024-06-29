@@ -1,7 +1,11 @@
 local cmp = require 'cmp'
 
-local NAME_REGEX = '\\%([^/\\\\:\\*?<>\'"`\\|]\\)'
+--local NAME_REGEX = '\\%([^/\\\\:\\*?<>\'"`\\|]\\)'
+local NAME_REGEX = [[\%([^/\\:\*?<>'"`\|]\)]]
 local PATH_REGEX = vim.regex(([[\%(\%(/PAT*[^/\\\\:\\*?<>\'"`\\| .~]\)\|\%(/\.\.\)\)*/\zePAT*$]]):gsub('PAT', NAME_REGEX))
+
+local path_pattern = [[[^ "'\t]\+$]]
+local path_regex = vim.regex(path_pattern)
 
 local source = {}
 
@@ -39,6 +43,7 @@ source.complete = function(self, params, callback)
   local option = self:_validate_option(params)
 
   local dirname = self:_dirname(params, option)
+  dirname = vim.fn.expand(dirname)
   if not dirname then
     return callback()
   end
@@ -66,6 +71,16 @@ source.resolve = function(self, completion_item, callback)
 end
 
 source._dirname = function(self, params, option)
+  local s, e = path_regex:match_str(params.context.cursor_before_line)
+  if not s then
+    return nil
+  end
+  local dirname = string.sub(params.context.cursor_before_line, s + 1, e)
+
+  do return dirname end
+  -- ignore orignal code
+  ---=========================================================================
+
   local s = PATH_REGEX:match_str(params.context.cursor_before_line)
   if not s then
     return nil
