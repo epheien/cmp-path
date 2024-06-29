@@ -43,8 +43,8 @@ source.complete = function(self, params, callback)
   local option = self:_validate_option(params)
 
   local dirname = self:_dirname(params, option)
-  dirname = vim.fn.expand(dirname)
-  if not dirname then
+  local ok, dirname = pcall(vim.fn.expand, dirname)
+  if not ok then
     return callback()
   end
 
